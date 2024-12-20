@@ -1,0 +1,65 @@
+Android - Proxy Detection
+
+Steps to Use:
+Add the ProxyDetection class to your app.
+Call ProxyDetection.detectProxy(context) in your app's entry point (e.g., onCreate in the main activity).
+______________________________________________________________________________________________________________________________
+import android.content.Context;
+import android.net.Proxy;
+import android.os.Build;
+import java.net.InetSocketAddress;
+import java.net.ProxySelector;
+import java.util.List;
+
+public class ProxyDetection {
+
+    /**
+     * Detects if a proxy is being used.
+     *
+     * @param context the application context.
+     * @return true if a proxy is detected, false otherwise.
+     */
+    public static boolean isProxyDetected(Context context) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                String proxyHost = System.getProperty("http.proxyHost");
+                String proxyPort = System.getProperty("http.proxyPort");
+
+                if (proxyHost != null && proxyPort != null) {
+                    return true; // Proxy is set
+                }
+            } else {
+                String proxyHost = Proxy.getHost(context);
+                int proxyPort = Proxy.getPort(context);
+
+                if (proxyHost != null && proxyPort != -1) {
+                    return true; // Proxy is set
+                }
+            }
+
+            // Additional checks for manual proxy settings
+            List<java.net.Proxy> proxies = ProxySelector.getDefault().select(new java.net.URI("http://www.google.com"));
+            for (java.net.Proxy proxy : proxies) {
+                if (proxy.type() != java.net.Proxy.Type.DIRECT) {
+                    return true; // Proxy is detected
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Logs the proxy detection result.
+     *
+     * @param context the application context.
+     */
+    public static void detectProxy(Context context) {
+        if (isProxyDetected(context)) {
+            System.out.println("Proxy detected!");
+        } else {
+            System.out.println("No proxy detected.");
+        }
+    }
+}
