@@ -1,0 +1,42 @@
+** Swift Code for VPN Detection on iOS ** 
+
+Steps to Use:
+Call the Detector: Use VPNDetector.detectVPN() in your app to log the VPN status or use VPNDetector.isVPNActive() to get a boolean indicating whether a VPN is active.
+Integrate in App Lifecycle: You can call the detection function during app launch, backgrounding, or any specific event to monitor VPN usage.
+_____________________________________________________________________________________________________________________________________
+import Foundation
+import SystemConfiguration
+
+class VPNDetector {
+
+    /**
+     Checks if a VPN is active on the device by inspecting the network interfaces.
+
+     - Returns: `true` if a VPN is active, `false` otherwise.
+     */
+    static func isVPNActive() -> Bool {
+        guard let networkInterfaces = SCNetworkInterfaceCopyAll() as? [SCNetworkInterface] else {
+            return false
+        }
+
+        for interface in networkInterfaces {
+            if let interfaceName = SCNetworkInterfaceGetBSDName(interface) as String?,
+               interfaceName.contains("utun") || interfaceName.contains("ipsec") || interfaceName.contains("ppp") {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    /**
+     Logs the current VPN status to the console.
+     */
+    static func detectVPN() {
+        if isVPNActive() {
+            print("VPN is currently active.")
+        } else {
+            print("No active VPN detected.")
+        }
+    }
+}
