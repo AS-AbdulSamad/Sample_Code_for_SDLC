@@ -1,0 +1,43 @@
+iOS - Proxy Detection
+
+Steps to Use:
+Add the ProxyDetection class to your app.
+Call ProxyDetection.detectProxy() during app initialization or where needed.
+__________________________________________________________________________________________________
+import Foundation
+import UIKit
+
+class ProxyDetection {
+
+    /**
+     Detects if a proxy is being used.
+     
+     - Returns: `true` if a proxy is detected, `false` otherwise.
+     */
+    static func isProxyDetected() -> Bool {
+        guard let proxySettings = CFNetworkCopySystemProxySettings()?.takeRetainedValue() as? [String: Any],
+              let proxies = proxySettings["__SCOPED__"] as? [String: Any] else {
+            return false
+        }
+
+        for (_, proxy) in proxies {
+            if let proxyDict = proxy as? [String: Any],
+               let proxyType = proxyDict["kCFProxyTypeKey"] as? String,
+               proxyType != "kCFProxyTypeNone" {
+                return true // Proxy is detected
+            }
+        }
+        return false
+    }
+
+    /**
+     Logs the proxy detection result.
+     */
+    static func detectProxy() {
+        if isProxyDetected() {
+            print("Proxy detected!")
+        } else {
+            print("No proxy detected.")
+        }
+    }
+}
