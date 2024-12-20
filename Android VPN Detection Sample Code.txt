@@ -1,0 +1,79 @@
+** Java Code for VPN Detection on Android ** 
+```
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
+import android.os.Build;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.List;
+
+public class VPNDetector {
+
+    /**
+     * Checks if the device is currently using a VPN connection.
+     *
+     * @param context the application context.
+     * @return true if a VPN is active, false otherwise.
+     */
+    public static boolean isVPNActive(Context context) {
+        if (context == null) {
+            return false;
+        }
+
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (connectivityManager != null) {
+                NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
+                if (networkCapabilities != null) {
+                    return networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN);
+                }
+            }
+        } else {
+            // Fallback for older Android versions
+            try {
+                for (String interfaceName : java.net.NetworkInterface.getNetworkInterfaces().nextElement().getInterfaceAddresses().stream()
+                        .map(interfaceAddr -> interfaceAddr.getNetworkInterface().getName()).toList()) {
+                    if (interfaceName.contains("tun") || interfaceName.contains("ppp")) {
+                        return true;
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Optional: Check common VPN endpoints to enhance detection.
+     *
+     * @param host the endpoint host.
+     * @param port the endpoint port.
+     * @return true if the endpoint is reachable, false otherwise.
+     */
+    public static boolean isCommonVPNEndpoint(String host, int port) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(host, port), 3000);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Detect VPN activity and log the result.
+     *
+     * @param context the application context.
+     */
+    public static void detectVPN(Context context) {
+        if (isVPNActive(context)) {
+            System.out.println("VPN is currently active.");
+        } else {
+            System.out.println("No active VPN detected.");
+        }
+    }
+}
+
+```
