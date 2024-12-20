@@ -1,5 +1,6 @@
 ** Java Code for VPN Detection on Android ** 
-```
+_____________________________________________________________________________________________________________________________________
+
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
@@ -76,4 +77,3 @@ public class VPNDetector {
     }
 }
 
-```
