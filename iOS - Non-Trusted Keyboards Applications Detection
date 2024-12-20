@@ -1,0 +1,43 @@
+** iOS - Non-Trusted Keyboard Applications Detection **
+
+Steps to Use:
+Restrict Third-Party Keyboards: For sensitive input fields, call KeyboardDetector.disableThirdPartyKeyboards(for: textField) on the UITextField object.
+Detect Third-Party Keyboards: Use KeyboardDetector.detectKeyboard() to determine whether a third-party keyboard is active.
+_________________________________________________________________________________________________________________________
+import UIKit
+
+class KeyboardDetector {
+
+    /**
+     Disables third-party keyboards for secure text input fields.
+     
+     - Parameter textField: The UITextField for which the keyboard should be restricted.
+     */
+    static func disableThirdPartyKeyboards(for textField: UITextField) {
+        textField.keyboardType = .default
+        textField.isSecureTextEntry = true
+    }
+
+    /**
+     Checks if a third-party keyboard is currently in use.
+     
+     - Returns: `true` if a third-party keyboard is active, `false` otherwise.
+     */
+    static func isThirdPartyKeyboardActive() -> Bool {
+        guard let keyboardIdentifier = UITextInputMode.activeInputModes.first?.identifier else {
+            return false
+        }
+        return !keyboardIdentifier.hasPrefix("com.apple.keyboard")
+    }
+
+    /**
+     Logs the current keyboard trust status.
+     */
+    static func detectKeyboard() {
+        if isThirdPartyKeyboardActive() {
+            print("A third-party keyboard is active.")
+        } else {
+            print("An Apple default keyboard is active.")
+        }
+    }
+}
