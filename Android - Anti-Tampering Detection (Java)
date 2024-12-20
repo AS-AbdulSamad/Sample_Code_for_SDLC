@@ -1,0 +1,101 @@
+Android - Anti-Tampering Detection (Java)
+
+Steps to Use:
+Add the code to your app's utility class.
+Call AntiTampering.performTamperingCheck(context) in your app's entry point (e.g., onCreate in the main activity).
+________________________________________________________________________________________________________________________
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.util.Base64;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+public class AntiTampering {
+
+    /**
+     * Verifies if the app's signature matches the expected signature.
+     *
+     * @param context the application context.
+     * @return true if the app's signature is valid, false otherwise.
+     */
+    public static boolean isAppSignatureValid(Context context) {
+        try {
+            PackageManager pm = context.getPackageManager();
+            PackageInfo packageInfo = pm.getPackageInfo(context.getPackageName(), PackageManager.GET_SIGNATURES);
+
+            // Replace with your app's expected signature
+            String expectedSignature = "EXPECTED_SIGNATURE_HASH";
+
+            if (packageInfo.signatures != null && packageInfo.signatures.length > 0) {
+                for (android.content.pm.Signature signature : packageInfo.signatures) {
+                    String currentSignature = getSHA256(signature.toByteArray());
+                    if (expectedSignature.equals(currentSignature)) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Computes SHA-256 hash of the input byte array.
+     *
+     * @param input the byte array.
+     * @return the SHA-256 hash as a string.
+     */
+    private static String getSHA256(byte[] input) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(input);
+            return Base64.encodeToString(hash, Base64.NO_WRAP);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Checks for signs of root/jailbreak.
+     *
+     * @return true if the device appears to be rooted, false otherwise.
+     */
+    public static boolean isDeviceRooted() {
+        String[] rootIndicators = {
+                "/system/xbin/su",
+                "/system/bin/su",
+                "/system/app/Superuser.apk",
+                "/sbin/su"
+        };
+        for (String path : rootIndicators) {
+            if (new java.io.File(path).exists()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Performs anti-tampering checks and logs results.
+     *
+     * @param context the application context.
+     */
+    public static void performTamperingCheck(Context context) {
+        if (!isAppSignatureValid(context)) {
+            System.out.println("App signature is invalid. Possible tampering detected!");
+        } else {
+            System.out.println("App signature is valid.");
+        }
+
+        if (isDeviceRooted()) {
+            System.out.println("Device is rooted. Increased risk of tampering!");
+        } else {
+            System.out.println("Device is not rooted.");
+        }
+    }
+}
