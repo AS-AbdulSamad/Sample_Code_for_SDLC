@@ -1,4 +1,9 @@
 ** Java Code for VPN Detection on Android ** 
+
+Steps to Use:
+Add Permissions: Ensure the ACCESS_NETWORK_STATE permission is added to your AndroidManifest.xml file:
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+Invoke the Detector: Call the VPNDetector.detectVPN(Context context) method from your activity or service to check if a VPN is active.
 _____________________________________________________________________________________________________________________________________
 
 import android.content.Context;
