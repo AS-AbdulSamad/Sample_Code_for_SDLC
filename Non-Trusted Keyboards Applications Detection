@@ -1,0 +1,62 @@
+Android Implementation (Java): Non-Trusted Keyboard Applications Detection
+
+Steps to Use:
+Add Permissions: Ensure you have the following permission in your AndroidManifest.xml:
+<uses-permission android:name="android.permission.READ_SECURE_SETTINGS" />
+Note: This permission is restricted to system apps. In most cases, third-party apps can access input method settings using Settings.Secure.DEFAULT_INPUT_METHOD.
+Call the Detector: Use KeyboardDetector.detectKeyboard(Context context) to determine whether the current keyboard is trusted.
+
+______________________________________________________________________________________________________________________
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.provider.Settings;
+import android.text.TextUtils;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class KeyboardDetector {
+
+    // Define a list of trusted keyboard packages
+    private static final List<String> TRUSTED_KEYBOARDS = Arrays.asList(
+            "com.google.android.inputmethod.latin", // Gboard
+            "com.swiftkey.swiftkey",              // SwiftKey
+            "com.samsung.android.honeyboard"      // Samsung Keyboard
+    );
+
+    /**
+     * Checks if the current keyboard is a trusted one.
+     *
+     * @param context the application context.
+     * @return true if the current keyboard is trusted, false otherwise.
+     */
+    public static boolean isKeyboardTrusted(Context context) {
+        try {
+            String defaultInputMethod = Settings.Secure.getString(
+                    context.getContentResolver(),
+                    Settings.Secure.DEFAULT_INPUT_METHOD
+            );
+
+            if (!TextUtils.isEmpty(defaultInputMethod)) {
+                String keyboardPackage = defaultInputMethod.split("/")[0];
+                return TRUSTED_KEYBOARDS.contains(keyboardPackage);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Logs the keyboard trust status.
+     *
+     * @param context the application context.
+     */
+    public static void detectKeyboard(Context context) {
+        if (isKeyboardTrusted(context)) {
+            System.out.println("The keyboard is trusted.");
+        } else {
+            System.out.println("The keyboard is NOT trusted.");
+        }
+    }
+}
