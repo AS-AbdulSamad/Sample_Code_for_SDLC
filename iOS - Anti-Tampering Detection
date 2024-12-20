@@ -1,0 +1,83 @@
+iOS - Anti-Tampering Detection
+
+Steps to Use:
+Integrate the code in your app's main class.
+Call AntiTampering.performTamperingCheck() during app initialization.
+________________________________________________________________________________________________________________________
+import Foundation
+import UIKit
+
+class AntiTampering {
+
+    /**
+     Verifies the app's signature.
+     
+     - Returns: `true` if the app's signature is valid, `false` otherwise.
+     */
+    static func isAppSignatureValid() -> Bool {
+        let bundlePath = Bundle.main.bundlePath
+        let result = system("codesign --verify --deep --strict \(bundlePath)")
+        return result == 0
+    }
+
+    /**
+     Checks for signs of jailbreaking.
+     
+     - Returns: `true` if the device appears to be jailbroken, `false` otherwise.
+     */
+    static func isDeviceJailbroken() -> Bool {
+        let jailbreakIndicators = [
+            "/Applications/Cydia.app",
+            "/usr/sbin/sshd",
+            "/bin/bash",
+            "/etc/apt",
+            "/private/var/lib/apt/"
+        ]
+
+        for path in jailbreakIndicators {
+            if FileManager.default.fileExists(atPath: path) {
+                return true
+            }
+        }
+
+        // Additional checks
+        if canWriteToRestrictedPaths() {
+            return true
+        }
+
+        return false
+    }
+
+    /**
+     Tries to write to a restricted directory as an additional jailbreak check.
+     
+     - Returns: `true` if writing to restricted paths is allowed, `false` otherwise.
+     */
+    private static func canWriteToRestrictedPaths() -> Bool {
+        let testPath = "/private/jailbreakTest.txt"
+        do {
+            try "test".write(toFile: testPath, atomically: true, encoding: .utf8)
+            try FileManager.default.removeItem(atPath: testPath)
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    /**
+     Performs anti-tampering checks and logs results.
+     */
+    static func performTamperingCheck() {
+        if !isAppSignatureValid() {
+            print("App signature is invalid. Possible tampering detected!")
+        } else {
+            print("App signature is valid.")
+        }
+
+        if isDeviceJailbroken() {
+            print("Device is jailbroken. Increased risk of tampering!")
+        } else {
+            print("Device is not jailbroken.")
+        }
+    }
+}
